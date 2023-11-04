@@ -2,6 +2,7 @@ import moderngl
 from array import array
 import numpy as np
 import cv2
+from PIL import Image
 
 class ImageTransformer:
     def __init__(self, ctx: moderngl.Context, size: tuple[int, int]):
@@ -48,6 +49,11 @@ class ImageTransformer:
         self.fbo.use()
         texture.use(0)
         self.quad.render(mode=moderngl.TRIANGLE_STRIP)
+
+    def get_image_pil(self) -> Image.Image:
+        raw = self.fbo.read(components=3, dtype='f1')
+        buf = np.frombuffer(raw, dtype='uint8').reshape((*self.fbo.size[1::-1], 3))
+        return Image.fromarray(buf)
 
     def get_image_cv2(self) -> cv2.typing.MatLike:
         raw = self.fbo.read(components=3, dtype='f1')
