@@ -32,6 +32,7 @@ def on_vid_save_button_pressed():
         initialdir=curr_dir,
         filetypes=(
             ("mp4 files","*.mp4"),
+            ("avi files","*.avi"),
         )
     )
     if filename:
