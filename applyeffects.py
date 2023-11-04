@@ -61,7 +61,7 @@ def audioEffects(filename):
     with AudioFile('processed_audio.wav','w', samplerate, effected.shape[0]) as f:
         f.write(effected)
 
-def applyAllEffects(filename:str, outfile:str):
+def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     ext = filename.split(".")[-1]
     audio_filename = ""
     if ext == 'mp4' or ext == 'avi':
@@ -93,6 +93,9 @@ def applyAllEffects(filename:str, outfile:str):
         os.remove(str(local_path) + "/processed_audio.wav")
     if os.path.exists(str(local_path) + "/temp_video.mp4"):
         os.remove(str(local_path) + "/temp_video.mp4")
+    
+    if callback != None:
+        callback()
 
 if __name__=="__main__":
     # audioEffects("test.mp3")
