@@ -1,5 +1,5 @@
 import cv2
-import sys
+import sys, os
 import subprocess
 from pedalboard import *
 from pedalboard.io import AudioFile
@@ -84,6 +84,14 @@ def applyAllEffects(filename:str, outfile:str):
 
     cmd = "ffmpeg -y -ac 2 -channel_layout stereo -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + outfile
     subprocess.call(cmd, shell=True)
+
+    local_path = os.getcwd()
+    if os.path.exists(str(local_path) + "/temp_audio.wav"):
+        os.remove(str(local_path) + "/temp_audio.wav")
+    if os.path.exists(str(local_path) + "/processed_audio.wav"):
+        os.remove(str(local_path) + "/processed_audio.wav")
+    if os.path.exists(str(local_path) + "/temp_video.mp4"):
+        os.remove(str(local_path) + "/temp_video.mp4")
 
 if __name__=="__main__":
     # audioEffects("test.mp3")
