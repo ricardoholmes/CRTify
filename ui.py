@@ -5,8 +5,7 @@ import os
 import applyeffects
 import threading
 
-# curr_dir = os.path.expanduser("~")
-curr_dir = "/media/shareddata/Shared Documents/Programming/CRTify/"
+curr_dir = os.path.expanduser("~")
 curr_in = ""
 curr_out = ""
 output_message = None
