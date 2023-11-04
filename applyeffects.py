@@ -6,6 +6,7 @@ from pedalboard.io import AudioFile
 import numpy as np
 import shaderController
 import threading
+import shlex
 
 def vidEffects(filepath:str):
     # Attempt to open input video
@@ -64,7 +65,7 @@ def applyAllEffects(filename:str, outfile:str):
     ext = filename.split(".")[-1]
     audio_filename = ""
     if ext == 'mp4' or ext == 'avi':
-        command = "ffmpeg -i "+ filename +" -ab 160k -ac 2 -ar 44100 -vn temp_audio.wav -y"
+        command = "ffmpeg -i "+ shlex.quote(filename) +" -ab 160k -ac 2 -ar 44100 -vn temp_audio.wav -y"
         subprocess.call(command, shell=True)
         audio_filename = "temp_audio.wav"
     else:
@@ -82,7 +83,7 @@ def applyAllEffects(filename:str, outfile:str):
     audio_thread.join()
     video_thread.join()
 
-    cmd = "ffmpeg -y -ac 2 -channel_layout stereo -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + outfile
+    cmd = "ffmpeg -y -ac 2 -channel_layout stereo -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
     subprocess.call(cmd, shell=True)
 
     local_path = os.getcwd()
