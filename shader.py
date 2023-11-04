@@ -44,17 +44,17 @@ class ImageTransformer:
             ]
         )
 
-    def render(self, texture, target=None):
+    def render(self, texture: moderngl.Texture) -> cv2.typing.MatLike:
         self.fbo.use()
         texture.use(0)
         self.quad.render(mode=moderngl.TRIANGLE_STRIP)
 
-    def write(self, name):
+    def write(self, name: str) -> cv2.typing.MatLike:
         image = Image.frombytes("RGBA", self.fbo.size, self.fbo.read(components=4))
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
         image.save(name, format=name.split('.')[-1])
 
-    def get_image_cv2(self):
+    def get_image_cv2(self) -> cv2.typing.MatLike:
         raw = self.fbo.read(components=4, dtype='f1')
         buf = np.frombuffer(raw, dtype='uint8').reshape((*self.fbo.size[1::-1], 4))
         return buf

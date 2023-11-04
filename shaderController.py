@@ -2,7 +2,7 @@ import moderngl
 from shader import ImageTransformer
 import cv2
 
-def applyShader(image: cv2.typing.MatLike, size: tuple[int, int]):
+def applyShader(image: cv2.typing.MatLike, size: tuple[int, int]) -> cv2.typing.MatLike:
     ctx = moderngl.create_context(300, True, False)
     image_processor = ImageTransformer(ctx, size)
 
