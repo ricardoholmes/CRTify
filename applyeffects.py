@@ -3,10 +3,11 @@ import sys, os
 import subprocess
 from pedalboard import *
 from pedalboard.io import AudioFile
-import numpy as np
 import shaderController
 import threading
 import shlex
+import moderngl
+from shader import ImageTransformer
 
 def vidEffects(filepath:str):
     # Attempt to open input video
@@ -20,12 +21,17 @@ def vidEffects(filepath:str):
         sys.exit(1)
 
     fps = vid.get(cv2.CAP_PROP_FPS)
-
     dimensions = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)), int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    fps = vid.get(cv2.CAP_PROP_FPS)
-    frame_time = int((1/fps) * 1000) // 2 # Frame time in milliseconds
+    
+    ctx = moderngl.create_context(460, True, False)
+    image_processor = ImageTransformer(ctx, dimensions)
+
+    frame_time = int((1/fps) * 1000) # Frame time in milliseconds
     ret, frame = vid.read()
-    processed_frame = shaderController.applyShader(frame, dimensions)
+    # processed_frame = shaderController.applyShader(frame, dimensions)
+    texture = ctx.texture(frame.shape[1::-1], frame.shape[2], frame)
+    image_processor.render(texture)
+    processed_frame = image_processor.get_image_cv2()
     new_dimensions = (processed_frame.shape[1], processed_frame.shape[0])
     output = cv2.VideoWriter("temp_video.mp4",cv2.VideoWriter_fourcc('m','p','4','v'), fps, new_dimensions)
     output.write(processed_frame)
@@ -34,15 +40,21 @@ def vidEffects(filepath:str):
         if not ret:
             break
 
-        processed_frame = shaderController.applyShader(frame, dimensions)
+        # processed_frame = shaderController.applyShader(frame, dimensions)
+        texture = ctx.texture(frame.shape[1::-1], frame.shape[2], frame)
+        image_processor.render(texture)
+        processed_frame = image_processor.get_image_cv2()
         # cv2.imshow("Input", frame)
         # if cv2.waitKey(frame_time) & 0xFF == ord('q'):
         #     break
         # cv2.imshow("Debug",processed_frame)
         
         output.write(processed_frame)
+        
     vid.release()
     output.release()
+    cv2.destroyAllWindows()
+    print("Video complete")
 
 def audioEffects(filename):
     samplerate = 44100.0
@@ -60,6 +72,7 @@ def audioEffects(filename):
     effected = board(audio, samplerate)
     with AudioFile('processed_audio.wav','w', samplerate, effected.shape[0]) as f:
         f.write(effected)
+    print("Audio complete")
 
 def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     ext = filename.split(".")[-1]
@@ -78,9 +91,9 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     video_thread = threading.Thread(target=vidEffects, args=(filename,))
 
     audio_thread.start()
-    video_thread.start()
 
     audio_thread.join()
+    video_thread.start()
     video_thread.join()
 
     cmd = "ffmpeg -y -ac 2 -channel_layout stereo -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
@@ -101,3 +114,4 @@ if __name__=="__main__":
     # audioEffects("test.mp3")
     # vidEffects("test.mp4")
     applyAllEffects("test.mp4", "output.mp4")
+    # applyAllEffects("sample video.mp4", "sample output.mp4")
