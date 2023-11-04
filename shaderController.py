@@ -10,8 +10,3 @@ def applyShader(image: cv2.typing.MatLike, size: tuple[int, int]) -> cv2.typing.
     image_processor.render(texture)
 
     return image_processor.get_image_cv2()
-
-if __name__ == '__main__':
-    image = cv2.imread('image.png')
-    rendered = applyShader(image, (1274, 714))
-    cv2.imwrite('test.png', rendered)
