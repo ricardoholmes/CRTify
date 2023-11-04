@@ -4,8 +4,11 @@ Adds a CRT filter to the screen in realtime and re-renders videos by adding a CR
 
 ## Dependencies
 
-- opencv-python
-- moderngl
-- numpy
-- Pillow
-- pedalboard
+- Python 3.10+
+- Libraries:
+    - opencv-python
+    - moderngl
+    - numpy
+    - Pillow
+    - pedalboard
+    - tkinter
