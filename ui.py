@@ -2,11 +2,15 @@ import tkinter as tk
 from tkinter import ttk, StringVar
 from tkinter import filedialog as fd
 import os
+import applyeffects
+import threading
 
-curr_dir = os.path.expanduser("~")
+# curr_dir = os.path.expanduser("~")
+curr_dir = "/media/shareddata/Shared Documents/Programming/CRTify/"
 curr_in = ""
 curr_out = ""
 output_message = None
+running = True
 
 def on_vid_open_button_pressed():
     global curr_dir, curr_in
@@ -36,6 +40,11 @@ def on_vid_save_button_pressed():
         curr_out = filename
     print(filename)
 
+def on_crtify_complete():
+    global running
+    if running:
+        output_message.set("Success!")
+
 def run_crtify():
     global curr_in, curr_out, output_message
 
@@ -45,11 +54,14 @@ def run_crtify():
         output_message.set("No output file selected")
     else:
         #run
-        output_message.set("Success!")
+        processing_thread = threading.Thread(target=applyeffects.applyAllEffects, args=(curr_in, curr_out, on_crtify_complete,))
+        processing_thread.start()
+        # applyeffects.applyAllEffects(curr_in, curr_out)
+        
     # output_message.pack()
 
 def createUI():
-    global output_message
+    global output_message, running
     window = tk.Tk()
     window.title("CRTify")
     window.geometry("400x400")
@@ -68,6 +80,11 @@ def createUI():
     output_label.pack()
 
     window.mainloop()
+    running = False
+    if threading.active_count() > 1:
+        for i in threading.enumerate():
+            if i != threading.current_thread():
+                i.join()
 
 if __name__=="__main__":
     createUI()
