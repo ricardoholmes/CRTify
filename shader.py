@@ -40,7 +40,7 @@ class ImageTransformer:
         self.quad = self.ctx.vertex_array(
             self.program,
             [
-                (self.vertices, '2f 2f', 'in_position', 'in_color'),
+                (self.vertices, '2f 2f', 'in_coord', 'in_texture'),
             ]
         )
 
