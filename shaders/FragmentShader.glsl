@@ -1,11 +1,9 @@
-#version 430
+#version 330
 
-precision mediump float;
-uniform sampler2D Texture;
-
-in vec2 v_texture;
-out vec4 color;
+uniform sampler2D image;
+in vec2 color;
+out vec4 out_color;
 
 void main() {
-  color = vec4(texture(Texture, v_texture).rgb, 1.0);
+    out_color = vec4(texture(image, color).rgb, 1);
 }

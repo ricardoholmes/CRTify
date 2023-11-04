@@ -1,11 +1,10 @@
-#version 430
+#version 330
 
-in vec2 vertex_pos;
-in vec2 in_texture;
-
-out vec2 v_texture;
+in vec2 in_position;
+in vec2 in_color;
+out vec2 color;
 
 void main() {
-   gl_Position = vec4(vertex_pos, 0.0, 1.0);
-   v_texture = in_texture;
+    gl_Position = vec4(in_position, 0.0, 1.0);
+    color = in_color;
 }

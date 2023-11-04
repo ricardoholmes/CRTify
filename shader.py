@@ -1,6 +1,5 @@
 import moderngl
 from array import array
-from PIL import Image
 import numpy as np
 import cv2
 
@@ -9,11 +8,11 @@ class ImageTransformer:
         self.ctx = ctx
         self.size = size
 
-        with open('shaders/FragmentShader.glsl', 'r') as f:
-            frag_shader = f.read()
-
         with open('shaders/VertexShader.glsl', 'r') as f:
             vert_shader = f.read()
+
+        with open('shaders/FragmentShader.glsl', 'r') as f:
+            frag_shader = f.read()
 
         self.program = self.ctx.program(
             vertex_shader = vert_shader,
@@ -24,13 +23,14 @@ class ImageTransformer:
             color_attachments=[self.ctx.texture(self.size, 4)]
         )
 
+        # fullscreen quad in NDC
         self.vertices = self.ctx.buffer(
             array(
                 'f',
                 [
-                    # Triangle strip creating a fullscreen quad
+                    # triangle strip creating a fullscreen quad
                     # x, y, u, v
-                    -1,  1, 0, 1,  # upper left
+                    -1,  1, 0, 1, # upper left
                     -1, -1, 0, 0, # lower left
                      1,  1, 1, 1, # upper right
                      1, -1, 1, 0, # lower right
@@ -40,7 +40,7 @@ class ImageTransformer:
         self.quad = self.ctx.vertex_array(
             self.program,
             [
-                (self.vertices, '2f 2f', 'in_position', 'in_uv'),
+                (self.vertices, '2f 2f', 'in_position', 'in_color'),
             ]
         )
 
@@ -48,11 +48,6 @@ class ImageTransformer:
         self.fbo.use()
         texture.use(0)
         self.quad.render(mode=moderngl.TRIANGLE_STRIP)
-
-    def write(self, name: str) -> cv2.typing.MatLike:
-        image = Image.frombytes("RGBA", self.fbo.size, self.fbo.read(components=4))
-        image = image.transpose(Image.FLIP_TOP_BOTTOM)
-        image.save(name, format=name.split('.')[-1])
 
     def get_image_cv2(self) -> cv2.typing.MatLike:
         raw = self.fbo.read(components=4, dtype='f1')
