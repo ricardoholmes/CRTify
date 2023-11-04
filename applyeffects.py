@@ -23,11 +23,11 @@ def vidEffects(filepath:str):
     dimensions = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)), int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     fps = vid.get(cv2.CAP_PROP_FPS)
     frame_time = int((1/fps) * 1000) // 2 # Frame time in milliseconds
-    first_frame = ret, frame = vid.read()
+    ret, frame = vid.read()
     processed_frame = shaderController.applyShader(frame, dimensions)
-    new_dimensions = (processed_frame.shape[0], processed_frame.shape[1])
+    new_dimensions = (processed_frame.shape[1], processed_frame.shape[0])
     output = cv2.VideoWriter("temp_video.mp4",cv2.VideoWriter_fourcc('m','p','4','v'), fps, new_dimensions)
-    output.write(first_frame)
+    output.write(processed_frame)
     while True:
         ret, frame = vid.read()
         if not ret:
