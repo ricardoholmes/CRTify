@@ -4,20 +4,22 @@ from shader import ImageTransformer
 from PIL import ImageGrab
 import time
 from pedalboard.io import AudioStream
-import pedalboard
-import pyaudio
+from pedalboard import *
+import threading
 
 class Overlay2:
     def __init__(self) -> None:
-
-        size = (800,800)
+        # self.audio_thread()     
+        audio_thread = threading.Thread(target=self.audio_thread, daemon=True)
+        audio_thread.start() 
+        size = (1920,1080)
         pos = (0,0)
         ctx = moderngl.create_context(460, True, False)
         transformer = ImageTransformer(ctx, size)
         self.fps = 30
         self.frame_time = int((1/self.fps) * 1000) # Frame time in milliseconds
         self.prevTime = time.time()
-
+        cv2.WindowFlags
         while True:
             image = ImageGrab.grab((pos[0],pos[1],size[0],size[1])).convert('RGB')
             
@@ -31,14 +33,22 @@ class Overlay2:
             now = time.time()
             delta = (now-self.prevTime)*1000
             self.prevTime = now
-            if cv2.waitKey(int(max(self.frame_time-delta,1))) & 0xFF == ord('q'):
+            # if cv2.waitKey(int(max(self.frame_time-delta,1))) & 0xFF == ord('q'):
+            #     break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+        cv2.destroyAllWindows()
     
     def audio_thread(self):
-        # sr = 16000
-        # chunk = 1 * sr
-        # channel_nr = 1
-        # audio_interface = pyaudio.PyAudio()
-        # audio_stream = audio_interface.open()
-        with AudioStream(input_device_name="alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__hw_sofhdadsp__sink.monitor") as stream:
-            pass
+        stream = AudioStream(input_device_name="CABLE Output (VB-Audio Virtual", 
+                         output_device_name="Headphones (Redmi Buds 3 Pro)")
+        stream.plugins = Pedalboard([
+            # Resample(samplerate*0.65),
+            Bitcrush(8),
+            Compressor(-40,16,5,100),
+            HighpassFilter(100),
+            Distortion(),
+        ])
+        stream.run()
+
+        
