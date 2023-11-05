@@ -54,7 +54,7 @@ def run_crtify():
         output_message.set("No output file selected")
     else:
         image = Image.open(curr_in)
-        shaderImage = shaderController.applyShaderPIL(image)
+        shaderImage = shaderController.applyShaderPIL(image.convert("RGB"))
         shaderImage.save(curr_out)
         on_crtify_complete()
 
