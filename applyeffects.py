@@ -9,6 +9,8 @@ import shlex
 import moderngl
 from shader import ImageTransformer
 
+import videoController as vidCon
+
 import librosa
 import math
 import numpy as np
@@ -26,6 +28,7 @@ def vidEffects(filepath:str):
         sys.exit(1)
 
     fps = vid.get(cv2.CAP_PROP_FPS)
+    frame_count = vid.get(cv2.CAP_PROP_FRAME_COUNT)
     dimensions = (int(vid.get(cv2.CAP_PROP_FRAME_WIDTH)), int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     
     ctx = moderngl.create_context(460, True, False)
@@ -53,9 +56,10 @@ def vidEffects(filepath:str):
         # if cv2.waitKey(frame_time) & 0xFF == ord('q'):
         #     break
         # cv2.imshow("Debug",processed_frame)
-        
+        vidCon.videoProgress.step(100 * 1 / frame_count)
+
         output.write(processed_frame)
-        
+
     vid.release()
     output.release()
     cv2.destroyAllWindows()
@@ -76,9 +80,10 @@ def audioEffects(filename):
     ])
 
     effected = board(audio, samplerate)
-
     with AudioFile('processed_audio.wav','w', samplerate, effected.shape[0]) as f:
         f.write(effected)
+
+    vidCon.audioProgress.step(50)
 
     SNR = 30
     signal, sr = librosa.load('processed_audio.wav', sr=samplerate)
@@ -88,6 +93,7 @@ def audioEffects(filename):
     signal_noise = signal + noise
     write('processed_audio_with_noise.wav', samplerate, signal_noise)
 
+    vidCon.audioProgress.step(49)
     print("Audio complete")
 
 def applyAllEffects(filename:str, outfile:str, callback:callable=None):
@@ -102,7 +108,7 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
         exit(1)
 
     print(audio_filename)
-    # input()
+
     audio_thread = threading.Thread(target=audioEffects, args=(audio_filename,))
     video_thread = threading.Thread(target=vidEffects, args=(filename,))
 
@@ -114,6 +120,7 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
 
     cmd = "ffmpeg -y -ac 1 -channel_layout mono -i processed_audio_with_noise.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
     subprocess.call(cmd, shell=True)
+    vidCon.stitchingProgress.step(99)
 
     local_path = os.getcwd()
     if os.path.exists(str(local_path) + "/temp_audio.wav"):
@@ -124,7 +131,8 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
         os.remove(str(local_path) + "/processed_audio_with_noise.wav")
     if os.path.exists(str(local_path) + "/temp_video.mp4"):
         os.remove(str(local_path) + "/temp_video.mp4")
-    
+
+    vidCon.doneButton.grid(row=6, column=0)
     if callback != None:
         callback()
 
