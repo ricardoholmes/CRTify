@@ -2,10 +2,11 @@ import cv2
 import moderngl
 from shader import ImageTransformer
 from PIL import ImageGrab
-import time
+import time, os
 from pedalboard.io import AudioStream
 from pedalboard import *
 import threading
+from ffpyplayer.player import MediaPlayer
 
 class Overlay2:
     def __init__(self) -> None:
@@ -19,7 +20,6 @@ class Overlay2:
         self.fps = 30
         self.frame_time = int((1/self.fps) * 1000) # Frame time in milliseconds
         self.prevTime = time.time()
-        cv2.WindowFlags
         while True:
             image = ImageGrab.grab((pos[0],pos[1],size[0],size[1])).convert('RGB')
             
@@ -33,10 +33,10 @@ class Overlay2:
             now = time.time()
             delta = (now-self.prevTime)*1000
             self.prevTime = now
-            # if cv2.waitKey(int(max(self.frame_time-delta,1))) & 0xFF == ord('q'):
-            #     break
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(int(max(self.frame_time-delta,1))) & 0xFF == ord('q'):
                 break
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
         cv2.destroyAllWindows()
     
     def audio_thread(self):
@@ -49,6 +49,9 @@ class Overlay2:
             HighpassFilter(100),
             Distortion(),
         ])
+
+        self.player = MediaPlayer("static.mp3", ff_opts={'loop':0})
+        
         stream.run()
 
         
