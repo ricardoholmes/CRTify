@@ -27,10 +27,15 @@ def applyShaderPIL(image: Image.Image) -> Image.Image:
     texture = ctx.texture(image.size, 4, image.tobytes())
     image_processor.render(texture)
 
-    return image_processor.get_image_cv2()
+    return image_processor.get_image_pil()
 
 def clearContext():
     global ctx
     if ctx == -1:
         raise Exception('Attempted to clear context before creation')
     ctx.clear()
+
+if __name__ == '__main__':
+    image = Image.open('image.png')
+    crt = applyShaderPIL(image)
+    crt.save('out.png')

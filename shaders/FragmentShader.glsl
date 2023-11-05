@@ -28,8 +28,8 @@ void DrawVignette( inout vec3 color, vec2 uv )
 void DrawScanline( inout vec3 color, vec2 uv )
 {
     // uv = uv.yx;
-    float scanline 	= clamp(0.95 + 0.05 * cos( 3.14 * ( uv.y + 0.008 * time ) * 240.0 * 1.0 ), 0.0, 1.0 );
-    float grille 	= 0.85 + 0.15 * clamp( 1.5 * cos( 3.14 * uv.x * 640.0 * 1.0 ), 0.0, 1.0 );    
+    float scanline = clamp(0.7 + 0.3 * cos( 3.14 * ( uv.y + 0.010 * time ) * 240.0 * 1.0 ), 0.0, 1.0 );
+    float grille = 0.9 + 0.1 * clamp( 1.5 * cos( 3.14 * uv.x * 640.0 ), 0.0, 1.0 );    
     color *= scanline * grille * 1.6;
 }
 
@@ -41,7 +41,7 @@ void DrawBlur( inout vec3 color, vec2 uv )
     float Quality = 4.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
     float Size = 0.003; // BLUR SIZE (Radius)
     // GAUSSIAN BLUR SETTINGS }}}
-   
+
     vec2 Radius = vec2(Size,Size);
     
     vec4 newColor = vec4(color,1.0);
@@ -50,7 +50,7 @@ void DrawBlur( inout vec3 color, vec2 uv )
     {
 		for(float i=1.0/Quality; i<1.001; i+=1.0/Quality)
         {
-			newColor += texture( iChannel0, uv+(vec2(cos(d),sin(d))*Radius*i));	
+			newColor += texture( iChannel0, uv + (vec2(cos(d),sin(d)) * Radius * i));	
         }
     }
     newColor /= Quality * Directions + 1.0;
