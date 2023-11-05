@@ -1,11 +1,11 @@
 import applyeffects
-import overlay2
+import ui
 
 def main():
-    print('hello world')
-    overlay2.Overlay2()
+    ui.create()
+    # print('hello world')
+    # overlay2.Overlay2()
     # applyeffects.applyAllEffects("test.mp4", 'out.mp4')
-    
 
 if __name__ == '__main__':
     main()
