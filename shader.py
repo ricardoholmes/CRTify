@@ -3,6 +3,7 @@ from array import array
 import numpy as np
 import cv2
 from PIL import Image
+import time
 
 class ImageTransformer:
     def __init__(self, ctx: moderngl.Context, size: tuple[int, int]):
@@ -44,10 +45,15 @@ class ImageTransformer:
                 (self.vertices, '2f 2f', 'in_coord', 'in_texture'),
             ]
         )
+        self.startTime = time.time()
+        self.uTime = self.program['time']
+        self.uTime.value = 1.0
 
     def render(self, texture: moderngl.Texture) -> cv2.typing.MatLike:
+        self.ctx.clear()
         self.fbo.use()
         texture.use(0)
+        self.uTime.value = time.time()-self.startTime
         self.quad.render(mode=moderngl.TRIANGLE_STRIP)
 
     def get_image_pil(self) -> Image.Image:
