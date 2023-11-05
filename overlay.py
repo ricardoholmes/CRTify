@@ -1,8 +1,12 @@
-import tkinter
+import os
+import sys
+import pygame
 from PIL import Image, ImageTk, ImageGrab
-from shaderController import applyShader
+from shader import ImageTransformer
 from time import sleep
 from threading import Thread
+import moderngl
+import numpy as np
 
 FPS = 30
 INVERSE_FPS = 1 / FPS
@@ -10,49 +14,40 @@ INVERSE_FPS = 1 / FPS
 class Overlay:
     def __init__(self):
         self.kill = False
-        self.root = tkinter.Tk()
+        self.current_image = -1
 
-        self.w = self.root.winfo_screenwidth() // 4
-        self.h = self.root.winfo_screenheight() // 4
-        self.root.overrideredirect(1)
+        pygame.init()
+        window = pygame.display.set_mode((0, 0), pygame.OPENGL)
+        surface = pygame.Surface(pygame.display.get_window_size())
 
-        w = self.w
-        h = self.h
+        ctx = moderngl.create_context(460, True, False)
+        transformer = ImageTransformer(ctx, pygame.display.get_window_size())
 
-        self.root.geometry(f'{w}x{h}+0+0')
-        self.root.focus_set()
-        self.root.bind("<Escape>", lambda x: self.stop())
-        self.canvas = tkinter.Canvas(self.root,width=w,height=h)
-        self.canvas.pack()
-        self.canvas.configure(background='black')
-
-        self.runner = Thread(target=self.run)
-        self.runner.start()
-
-        self.root.mainloop()
-
-    def run(self):
+        clock = pygame.time.Clock()
         while not self.kill:
-            self.clear_image()
-            image = screenshot()
-            crt_image = applyShader(image)
-            self.set_image(crt_image)
-            sleep(INVERSE_FPS)
+            image = ImageGrab.grab().convert('RGBA')
 
-    def clear_image(self):
-        self.canvas.delete('all')
+            texture = ctx.texture(image.size, 4, image.tobytes())
+            transformer.render(texture)
+            crt_image = transformer.get_image_pil()
 
-    def set_image(self, pilImage: Image.Image):
-        image = ImageTk.PhotoImage(pilImage)
-        self.canvas.create_image(self.w/2, self.h/2, image=image)
+            # texture = ctx.texture(crt_image.size, 3, crt_image.tobytes())
+            # texture.build_mipmaps()
+            # texture.use()
+
+            current_image = pygame.image.fromstring(crt_image.tobytes(), crt_image.size, crt_image.mode).convert()
+
+            window.fill(0)
+            window.blit(current_image, (0, 0))
+            pygame.display.flip()
+            clock.tick(30)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                    self.stop()
+                    break
+
+        pygame.quit()
 
     def stop(self):
         self.kill = True
-        if self.root == 0:
-            raise Exception('Attempted to stop overlay before starting')
-        self.root.destroy()
-        self.root = 0
-
-def screenshot() -> Image.Image:
-    image = ImageGrab.grab(bbox=None, xdisplay=None)
-    return image

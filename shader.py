@@ -49,7 +49,7 @@ class ImageTransformer:
         self.uTime = self.program['time']
         self.uTime.value = 1.0
 
-    def render(self, texture: moderngl.Texture) -> cv2.typing.MatLike:
+    def render(self, texture: moderngl.Texture):
         self.ctx.clear()
         self.fbo.use()
         texture.use(0)

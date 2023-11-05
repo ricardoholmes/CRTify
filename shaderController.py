@@ -24,7 +24,7 @@ def applyShaderPIL(image: Image.Image) -> Image.Image:
 
     image_processor = ImageTransformer(ctx, image.size)
 
-    texture = ctx.texture(image.shape[1::-1], image.shape[2], image)
+    texture = ctx.texture(image.size, 4, image.tobytes())
     image_processor.render(texture)
 
     return image_processor.get_image_cv2()
