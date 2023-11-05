@@ -39,7 +39,7 @@ void DrawBlur( inout vec3 color, vec2 uv )
     // GAUSSIAN BLUR SETTINGS {{{
     float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
     float Quality = 4.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
-    float Size = 0.003; // BLUR SIZE (Radius)
+    float Size = 0.002; // BLUR SIZE (Radius)
     // GAUSSIAN BLUR SETTINGS }}}
 
     vec2 Radius = vec2(Size,Size);
