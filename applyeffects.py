@@ -66,7 +66,7 @@ def audioEffects(filename):
         Bitcrush(8),
         Compressor(-40,16,5,100),
         HighpassFilter(100),
-        LowpassFilter(12000),
+        LowpassFilter(4000),
         Distortion(),
     ])
 
@@ -80,7 +80,7 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     ext = filename.split(".")[-1]
     audio_filename = ""
     if ext == 'mp4' or ext == 'avi':
-        command = "ffmpeg -i "+ shlex.quote(filename) +" -ab 160k -ac 2 -ar 44100 -vn temp_audio.wav -y"
+        command = "ffmpeg -i "+ shlex.quote(filename) +" -ab 160k -ac 1 -ar 44100 -vn temp_audio.wav -y"
         subprocess.call(command, shell=True)
         audio_filename = "temp_audio.wav"
     else:
