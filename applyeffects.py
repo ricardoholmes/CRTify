@@ -9,6 +9,11 @@ import shlex
 import moderngl
 from shader import ImageTransformer
 
+import librosa
+import math
+import numpy as np
+from scipy.io.wavfile import write
+
 def vidEffects(filepath:str):
     # Attempt to open input video
     try:
@@ -57,7 +62,7 @@ def vidEffects(filepath:str):
     print("Video complete")
 
 def audioEffects(filename):
-    samplerate = 44100.0
+    samplerate = 44100
     with AudioFile(filename).resampled_to(samplerate) as f:
         audio = f.read(f.frames)
     
@@ -66,7 +71,7 @@ def audioEffects(filename):
         Bitcrush(8),
         Compressor(-40,16,5,100),
         HighpassFilter(100),
-        LowpassFilter(12000),
+        LowpassFilter(4000),
         Distortion(),
     ])
 
@@ -74,19 +79,28 @@ def audioEffects(filename):
 
     with AudioFile('processed_audio.wav','w', samplerate, effected.shape[0]) as f:
         f.write(effected)
+
+    SNR = 30
+    signal, sr = librosa.load('processed_audio.wav', sr=samplerate)
+    rms_signal = math.sqrt(np.mean(signal**2))
+    rms_noise = math.sqrt(rms_signal**2/(pow(10,SNR/10)))
+    noise = np.random.normal(0, rms_noise, signal.shape[0])
+    signal_noise = signal + noise
+    write('processed_audio_with_noise.wav', samplerate, signal_noise)
+
     print("Audio complete")
 
 def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     ext = filename.split(".")[-1]
     audio_filename = ""
     if ext == 'mp4' or ext == 'avi':
-        command = "ffmpeg -i "+ shlex.quote(filename) +" -ab 160k -ac 2 -ar 44100 -vn temp_audio.wav -y"
+        command = "ffmpeg -i "+ shlex.quote(filename) +" -ab 160k -ac 1 -ar 44100 -vn temp_audio.wav -y"
         subprocess.call(command, shell=True)
         audio_filename = "temp_audio.wav"
     else:
         print("Bye bye")
         exit(1)
-    
+
     print(audio_filename)
     # input()
     audio_thread = threading.Thread(target=audioEffects, args=(audio_filename,))
@@ -98,7 +112,7 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     audio_thread.join()
     video_thread.join()
 
-    cmd = "ffmpeg -y -ac 1 -channel_layout mono -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
+    cmd = "ffmpeg -y -ac 1 -channel_layout mono -i processed_audio_with_noise.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
     subprocess.call(cmd, shell=True)
 
     local_path = os.getcwd()
@@ -106,6 +120,8 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
         os.remove(str(local_path) + "/temp_audio.wav")
     if os.path.exists(str(local_path) + "/processed_audio.wav"):
         os.remove(str(local_path) + "/processed_audio.wav")
+    if os.path.exists(str(local_path) + "/processed_audio_with_noise.wav"):
+        os.remove(str(local_path) + "/processed_audio_with_noise.wav")
     if os.path.exists(str(local_path) + "/temp_video.mp4"):
         os.remove(str(local_path) + "/temp_video.mp4")
     
