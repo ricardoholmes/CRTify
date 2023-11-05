@@ -91,9 +91,9 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     video_thread = threading.Thread(target=vidEffects, args=(filename,))
 
     audio_thread.start()
+    video_thread.start()
 
     audio_thread.join()
-    video_thread.start()
     video_thread.join()
 
     cmd = "ffmpeg -y -ac 2 -channel_layout stereo -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
