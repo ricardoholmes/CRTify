@@ -66,10 +66,12 @@ def audioEffects(filename):
         Bitcrush(8),
         Compressor(-40,16,5,100),
         HighpassFilter(100),
+        LowpassFilter(12000),
         Distortion(),
     ])
 
     effected = board(audio, samplerate)
+
     with AudioFile('processed_audio.wav','w', samplerate, effected.shape[0]) as f:
         f.write(effected)
     print("Audio complete")
@@ -96,7 +98,7 @@ def applyAllEffects(filename:str, outfile:str, callback:callable=None):
     audio_thread.join()
     video_thread.join()
 
-    cmd = "ffmpeg -y -ac 2 -channel_layout stereo -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
+    cmd = "ffmpeg -y -ac 1 -channel_layout mono -i processed_audio.wav -i temp_video.mp4 -pix_fmt yuv420p " + shlex.quote(outfile)
     subprocess.call(cmd, shell=True)
 
     local_path = os.getcwd()
