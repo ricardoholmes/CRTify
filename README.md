@@ -21,3 +21,5 @@ Adds a CRT filter to the screen in realtime and applies a CRT shader to images a
     - ffpyplayer
 - ffmpeg
 - (For real-time audio) https://vb-audio.com/Cable/
+
+*Made in 24 hours by team 15 for HackNotts84*
