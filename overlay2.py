@@ -21,10 +21,10 @@ class Overlay2:
         
     def startVid(self):
         self.running = True
+        ctx = moderngl.create_context(460, True, False)
+        transformer = ImageTransformer(ctx, self.size)
         while True:
             image = ImageGrab.grab((self.pos[0],self.pos[1],self.size[0],self.size[1])).convert('RGB')
-            ctx = moderngl.create_context(460, True, False)
-            transformer = ImageTransformer(ctx, self.size)
 
             texture = ctx.texture(image.size, 3, image.tobytes())
             transformer.render(texture)
