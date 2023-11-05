@@ -74,7 +74,7 @@ def createUI():
     window.rowconfigure(1, weight=1)
     window.rowconfigure(2, weight=1)
 
-    input_file_button = ttk.Button(window, text="Open vid file", command=on_vid_open_button_pressed)
+    input_file_button = ttk.Button(window, text="Open video file", command=on_vid_open_button_pressed)
     output_file_button = ttk.Button(window, text="Save output file", command=on_vid_save_button_pressed)
 
     output_message = StringVar(value="")
