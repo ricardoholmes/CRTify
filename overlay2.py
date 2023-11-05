@@ -13,16 +13,19 @@ class Overlay2:
         # self.audio_thread()     
         audio_thread = threading.Thread(target=self.audio_thread, daemon=True)
         audio_thread.start() 
-        size = (1920,1080)
-        pos = (0,0)
-        ctx = moderngl.create_context(460, True, False)
-        transformer = ImageTransformer(ctx, size)
+        self.size = (1920,1080)
+        self.pos = (0,0)
         self.fps = 30
         self.frame_time = int((1/self.fps) * 1000) # Frame time in milliseconds
         self.prevTime = time.time()
+        
+    def startVid(self):
+        self.running = True
         while True:
-            image = ImageGrab.grab((pos[0],pos[1],size[0],size[1])).convert('RGB')
-            
+            image = ImageGrab.grab((self.pos[0],self.pos[1],self.size[0],self.size[1])).convert('RGB')
+            ctx = moderngl.create_context(460, True, False)
+            transformer = ImageTransformer(ctx, self.size)
+
             texture = ctx.texture(image.size, 3, image.tobytes())
             transformer.render(texture)
             crt_image = cv2.cvtColor(transformer.get_image_cv2(), cv2.COLOR_RGB2BGR)
@@ -33,7 +36,7 @@ class Overlay2:
             now = time.time()
             delta = (now-self.prevTime)*1000
             self.prevTime = now
-            if cv2.waitKey(int(max(self.frame_time-delta,1))) & 0xFF == ord('q'):
+            if cv2.waitKey(int(max(self.frame_time-delta,1))) & 0xFF == ord('q') or not self.running:
                 break
             # if cv2.waitKey(1) & 0xFF == ord('q'):
             #     break
@@ -47,6 +50,7 @@ class Overlay2:
             Bitcrush(8),
             Compressor(-40,16,5,100),
             HighpassFilter(100),
+            LowpassFilter(4000),
             Distortion(),
         ])
 
@@ -54,4 +58,6 @@ class Overlay2:
         
         stream.run()
 
+    def stop(self):
+        self.running = False
         
